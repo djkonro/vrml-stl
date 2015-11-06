@@ -4,6 +4,8 @@
  *
  */
 
+#include <cmath>
+
 #include "node.h"
 #include "parser.h"
 #include "transform_node.h"

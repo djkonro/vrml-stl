@@ -11,8 +11,6 @@
 #include <cstring>
 #include <cmath>
 
-#include "bn.h"
-
 #include "string_util.h"
 #include "node.h"
 #include "node_type.h"
