@@ -1,3 +1,9 @@
+/**
+ *
+ * Author: Djimeli Konrad
+ *
+ */
+
 #ifndef HEADERS_H
 #define HEADERS_H
 
@@ -12,17 +18,16 @@ using namespace std;
 class FileUtil
 {
 private:
-    char *filename;
-    char *fileinput;
+	char *filename;
+	char *fileinput;
 
 public:
-    FileUtil(const char *filename);
-    ~FileUtil();
-    int getFileType();
-    char *storeFileInput();
-    char *getFileData();
+	FileUtil(const char *filename);
+	~FileUtil();
+	int getFileType();
+	char *storeFileInput();
+	char *getFileData();
+	void freeFileInput();
 };
 
-
 #endif
-

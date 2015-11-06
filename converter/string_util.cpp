@@ -1,189 +1,243 @@
+/**
+ *
+ * Author: Djimeli Konrad
+ *
+ */
+
 #include <iostream>
-#include <stdio.h>
+#include <cstdio>
 #include <string.h>
 #include <stdbool.h>
-#include "headers.h"
+#include <cstdlib>
+#include "string_util.h"
 
 using namespace std;
 
-//Take note that some node have been commented and would have to be undone then have the size of the string increased or dynamicaly allocated
-//also i would have to reformat the file to avoid comments too long and joint char like }# instead of } # by replacing the former with the later using the c++ string function
-static char *ptr = NULL;
+static char *ptr = NULL;   //pointer to current position in input file data
+static const char *keyword[]= { "DEF", "USE", "PROTO"};
 
-
-char *nextWord(char *inputstring, char * nextwd){
-	#ifdef FUNCLINE
-		cout << "Called in file " << __FILE__ << " line " << __LINE__ << " \n";
-		#endif
-		
-		if((*inputstring) == '\0' ){
-			 		//printf("End of file\n");
-			 		return inputstring;
-			 }
+//Parses data from input one word at a time
+char *
+nextWord(char *inputstring, char * nextwd)
+{
+	if((*inputstring) == '\0' ){
+		return inputstring;
+	}
+	
 	char *strptr; //pointer to string
-	char tempchar[50] = "";
+	char tempchar[MAXSTRSIZE] = "";
 	strptr = inputstring; 
 	
 	while(true){
-	//strcpy(inputstring,strptr);
-	switch(*strptr)
-  {
-   
-   /* Whitespace:  Simply ignore. */
-   case ' ':
-   case '\n':
-   case '\r': 
-   case '\t':
-   case ',':
-   		strptr++;
-   break;
-
-   /* Comment:  Ignore until end of line. */
-   case '#':
-    do {
-     strptr++;
-    } while((*strptr) != '\n' && (*strptr) != '\r' && (*strptr) != EOF);
-    break;
-    
-   default:
-   		if((*strptr) == '\0' ){
-			 		//printf("End of file\n");
-			 		return strptr;
-			 }
+		switch(*strptr){
+			case ' ':
+			case '\n':
+			case '\r': 
+			case '\t':
+			case ',':
+				strptr++;
+				break;
+			//found comment so read to end of line
+			case '#':
+				do {
+					strptr++;
+				} while((*strptr) != '\n' && (*strptr) != '\r' && (*strptr) != EOF);
+				break;    
+			default:
+				if((*strptr) == '\0' ){
+					return strptr;
+				}
 			 
-			 int count = 0;
-			 while(((*strptr) != ' ') && ((*strptr) != '\0') && ((*strptr) != '\n') && ((*strptr) != '\t')){
-			 	
-			 	tempchar[count] = (*strptr);
-			 	//printf("%c\n", *strptr);
-			 	strptr++;
-			 	count++;	 	
-			 }
+				int count = 0;
+				while(((*strptr) != ' ') && ((*strptr) != '\0') && ((*strptr) != '\n') && ((*strptr) != '\t')&& ((*strptr) != '\r')){
+					tempchar[count] = (*strptr);
+					strptr++;
+					count++;
+				}
 			 
-			 tempchar[count] = '\0';
-			 strcpy(nextwd,tempchar);
-			 #ifdef GETWORD
-			 cout << nextwd << endl << endl;
-			 #endif
-			 return strptr;
-			
-			 //printf("found %s\n", tempchar);
-			 	//printf("%s\n",strptr);
-			 	
-   	break;
-  }
-   		
+				tempchar[count] = '\0';
+				strcpy(nextwd,tempchar);
+				return strptr;
+				break;
+		}
 	} 
-
 }
 
 
-bool findKeyWord(char *inputstring, int kw)
+bool
+findKeyWord(char *inputstring, int kw)
 {
-	#ifdef FUNCLINE
-		cout << "Called in file " << __FILE__ << " line " << __LINE__ << " \n";
-		#endif
 	if(strcmp(inputstring , keyword[kw]) == 0){
-		//printf("Found the %s keyword\n", inputstring);
 		return 1; 
 	}else{
-		//printf("Not keyword\n");
 		return 0;
 	}
 
 }
 
-void stringcopy(string &str1, char *str2)
+void
+stringcopy(string &str1, char *str2)
 {
-	#ifdef FUNCLINE
-		cout << "Called in file " << __FILE__ << " line " << __LINE__ << " \n";
-		#endif
 	int i;
 	
 	for(i = 0; str2[i] != '\0'; i++){
-		//cout << str1[i] << " " << str2[i] << endl;
-		//str1[i] = str2[i];
-			str1.push_back(str2[i]);
-		
+		str1.push_back(str2[i]);
 	}
-		str1[i] = '\0';
-		
-		//cout << str1 << endl;
+	
+	str1[i] = '\0';
+
 }
 
-int stringcompare(string &str1, char *str2)
+int
+stringcompare(string &str1, char *str2)
 {
-	#ifdef FUNCLINE
-		cout << "Called in file " << __FILE__ << " line " << __LINE__ << " \n";
-		#endif
 	return strcmp(str1.c_str() , str2);
 }
 
-char *getNextWord(char * instring, char *nextword)
+char *
+getNextWord(char * instring, char *nextword)
 {
-	#ifdef FUNCLINE
-		cout << "Called in file " << __FILE__ << " line " << __LINE__ << " \n";
-		#endif
-	//get the next word;
 	if(ptr == NULL){
 		ptr = nextWord( instring ,nextword);
 	}else {
 		ptr = nextWord( ptr ,nextword);
 	}
 	
+	if(*ptr == '\0'){
+		return 0;
+	}else 
+		return ptr;
+}
+ 
+char *
+getNextWord( char *nextword)
+{
+	ptr = nextWord( ptr ,nextword);
+
 	if(*ptr == '\0')
 		return 0;
 	else 
 		return ptr;
-	//check if ptr is still null and return false	
-}
- 
-char *getNextWord( char *nextword)
-{	
-	#ifdef FUNCLINE
-		cout << "Called in file " << __FILE__ << " line " << __LINE__ << " \n";
-		#endif
-		ptr = nextWord( ptr ,nextword);
-		
-		if(*ptr == '\0')
-			return 0;
-		else 
-			return ptr;
 
 }
 
-void replaceStringChars(string &str, char ch,const char *rstring)
+void
+replaceStringChars(string &str, char ch,const char *rstring)
 {
-	 int pos = str.find( ch );
-	 
-	 while ( pos != string::npos )
-   {
-   	//cout << "ch has "<< ch << "and rstring has " << rstring << endl;
-      str.replace( pos, 1, rstring, 0,3 );
-      pos = str.find( ch , pos + 2 );
-   } 
-
+	int pos = str.find( ch );
+	int n = static_cast<int>(string::npos);
+	
+	while ( pos != n){
+		str.replace( pos, 1, rstring, 0,3 );
+		pos = str.find( ch , pos + 2 );
+	} 
 }
 
-void formatString(char *instring)
+void
+formatString(char *instring)
 {
 	string str;
-	//cout << " before convetion "<< endl;
-	//cout << instring << endl;
 	stringcopy(str, instring);
 	
-   replaceStringChars(str ,'#', "\n# ");
-   replaceStringChars(str ,'{', "\n{\n");
-   replaceStringChars(str ,'}', "\n}\n");
-   replaceStringChars(str ,'[', "\n[\n");
-   replaceStringChars(str ,']', "\n]\n");
-   replaceStringChars(str ,',', " , ");
+	replaceStringChars(str ,'#', "\n# ");
+	replaceStringChars(str ,'{', "\n{\n");
+	replaceStringChars(str ,'}', "\n}\n");
+	replaceStringChars(str ,'[', "\n[\n");
+	replaceStringChars(str ,']', "\n]\n");
+	replaceStringChars(str ,',', " , ");
    
-  strcpy(instring, str.c_str());
-  
-  //cout << "After the convertion " << endl;
-  //cout << instring << endl;
-
-
+	strcpy(instring, str.c_str());
 }
  
+void
+getSFVec3f(float *p)
+{
+	int i;
+	char val[MAXSTRSIZE];
+	char *ch;
+
+	for(i = 0; i < 3; i++){
+		ch = getNextWord( val );
+		p[i] = atof(val);
+		nextWord(ch , val);
+
+		if(*val == '}'){
+			break;
+		}
+	}
+}
+
+void
+getSFVec4f(float *p)
+{
+	int i;
+	char val[MAXSTRSIZE];
+	
+	for(i = 0; i < 4; i++){
+		getNextWord( val );
+		p[i] = atof(val);
+	}
+}
+
+void
+getInt(int &n)
+{
+	char val[MAXSTRSIZE];
+	
+	getNextWord( val );
+	n = atoi(val);
+}
+
+void
+getFloat(float &n)
+{
+	char val[MAXSTRSIZE];
+
+	getNextWord( val );
+	n = atof(val);
+}
+	
+void
+getCoordIndex(vector<int> &ccoordindex)
+{
+	int n;
+	char val[MAXSTRSIZE];
+	
+	getNextWord( val );
+	
+	while(getNextWord( val )){
+		if(*val == ']'){
+			break;
+		}
+		
+		if(*val == ',' || (strcmp("-1" ,val) == 0)){
+			continue;
+		}
+		
+		n = atoi(val);
+		ccoordindex.push_back(n);
+	}
+}
+
+void
+getPoint(vector<float> &cpoint)
+{
+	float n;
+	char val[MAXSTRSIZE];
+	
+	getNextWord( val );
+
+	while(getNextWord( val )){
+		if(*val == ']'){
+			break;
+		}
+		
+		if(*val == ','){
+			continue;
+		}
+		
+		n = atof(val);
+		
+		cpoint.push_back(n);
+	}
+}

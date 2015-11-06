@@ -1,48 +1,48 @@
+/**
+ *
+ * Author: Djimeli Konrad
+ *
+ */
+
 #include <iostream>
 #include <fstream>
-#include <stdio.h>
-#include <string.h>
+#include <cstdio>
+#include <cstring>
 #include "file_util.h"
 
 using namespace std;
-
-FileUtil::FileUtil(const char *filename)
+//Constructor with filename a parameter
+FileUtil::FileUtil(const char *fname)
 {	int len;
-	len = strlen(filename);
+	len = strlen(fname);
 	this->filename = new char[len];
-	strcpy(this->filename,filename);
+	strcpy(this->filename,fname);
 }
 
 FileUtil::~FileUtil()
 {
-	//delete [] fileinput;
 }
 
 //checks file type to note the format being processed and returns an int corresponding to file type
 int 
 FileUtil::getFileType() 
 {	
-	unsigned char format[10]; //string to hold file format
-	char file[10000];
+	unsigned char format[10]; 
 	
+	FILE *fp = fopen(filename, "rb"); 
 	
-	FILE *fp = fopen(filename, "rb"); //pointer to file to be read
-	
-	if (!fp)	
+	if (!fp)
 		return FILE_TYPE_UNKNOWN; //return with unknown type if it could not open file
-	if (fread(format, sizeof(unsigned char), 10, fp) != 10) {//read the file and store the first 10 char int format[]
+	if (fread(format, sizeof(unsigned char), 10, fp) != 10) {
 		fclose(fp);
 		return FILE_TYPE_UNKNOWN;
 	}
-	
-	//fscanf(fp,"%s",file);
-	//cout << file<<endl;
-	
+
 	fclose(fp);
 
 	int fileType = FILE_TYPE_UNKNOWN;
 	
-	//compares file formate with known formats co check for vrml version 1 or 2
+	//compares file formate with known formats to check for vrml version 1 or 2
 	if (strncmp((char *)format,"#VRML V2.0",10) == 0) {
 			fileType = FILE_TYPE_VRML;//vrml version 2
 		}
@@ -54,6 +54,7 @@ FileUtil::getFileType()
 	return fileType;
 }
 
+//Stores the file input in a char * 
 char *
 FileUtil::storeFileInput()
 {	
@@ -61,7 +62,7 @@ FileUtil::storeFileInput()
 	ifstream infile(filename, ios::in);
 	
 	infile.seekg(0, ios::end);
-	size = infile.tellg();
+	size = infile.tellg();  //Get file size
 	infile.seekg(0, ios::beg);
 	
 	fileinput = new char[(2*size) + 1];
@@ -70,6 +71,9 @@ FileUtil::storeFileInput()
 		fileinput[i] = infile.get();
 	}
 	fileinput[i] = '\0';
+	
+	infile.close();
+	
 	return fileinput;
 }
 
@@ -79,4 +83,8 @@ FileUtil::getFileData()
 	return this->fileinput;
 }
 
-
+void
+FileUtil::freeFileInput()
+{	
+	delete [] fileinput;
+}
