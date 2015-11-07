@@ -5,8 +5,6 @@ vrml-stl geometry converter
 
 - Installation and compilation
 
-cd vrml-stl/converter/
-
-make
-
-./vrml-stl infile.wrl outfile.stl
+  - cd vrml-stl/converter/
+  - make
+  - ./vrml-stl infile.wrl outfile.stl
