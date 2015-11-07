@@ -10,6 +10,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
+#include <fstream>
 
 #include "string_util.h"
 #include "node.h"
@@ -17,6 +18,8 @@
 #include "transform_node.h"
 
 using namespace std;
+
+const double idmat[] = { 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 };
 
 static const char *fields[] = {
 	"",
@@ -152,7 +155,7 @@ NODE::createNewNode(int nodetype, NODE *node)
 			node = new NODE;
 			node->nnodetype = NODE_TRANSFORM;
 			node->nodetypename = "Transform";
-			memcpy(node->rotmat,bn_mat_identity,sizeof(double)*16);
+			memcpy(node->rotmat,idmat,sizeof(double)*16);
 			initTransform(node);
 			return node;
 		case NODE_PROTO:
@@ -585,11 +588,18 @@ NODE::getPolyRep(NODE *node) {
 	
 	int indexsize = static_cast<int>(node->coordindex.size());
 	int i;
-	
-	for(i = 0; i < indexsize; i++){
-		node->vertics.push_back(node->point[node->coordindex[i]*3]);
-		node->vertics.push_back(node->point[node->coordindex[i]*3+1]);
-		node->vertics.push_back(node->point[node->coordindex[i]*3+2]);
+	if(node->nnodetype == NODE_SPHERE){
+		for(i = 0; i < indexsize; i++){
+			node->vertics.push_back(node->point[node->coordindex[i]*3]);
+			node->vertics.push_back(node->point[node->coordindex[i]*3+1]);
+			node->vertics.push_back(node->point[node->coordindex[i]*3+2]);
+		}
+	}else{
+		for(i = 0; i < indexsize; i++){
+			node->vertics.push_back(node->children[0]->point[node->coordindex[i]*3]);
+			node->vertics.push_back(node->children[0]->point[node->coordindex[i]*3+1]);
+			node->vertics.push_back(node->children[0]->point[node->coordindex[i]*3+2]);
+		}
 	}
 }
 
@@ -618,4 +628,49 @@ NODE::doMakePoly(vector<NODE*> &noderef)
 			noderef[i]->getPolyRep(noderef[i]);
 		}	
 	}	
+}
+
+int 
+NODE::matmultiply(double * r, double * mm , double* nn)
+{
+   double tm[16],tn[16];
+	double *m, *n;
+	int i,j,k;
+    /* prevent self-multiplication problems.*/
+	m = mm;
+	n = nn;
+    if(r == m) {
+	memcpy(tm,m,sizeof(double)*16);
+	m = tm;
+    }
+    if(r == n) {
+	memcpy(tn,n,sizeof(double)*16);
+	n = tn;
+    }
+	/* assume 4x4 homgenous transform */
+	for(i=0;i<4;i++)
+		for(j=0;j<4;j++)
+		{
+			r[i*4+j] = 0.0;
+			for(k=0;k<4;k++)
+				r[i*4+j] += m[i*4+k]*n[k*4+j];
+		}
+	return 0;
+	/* this method ignors the perspectives */
+    r[0] = m[0]*n[0]+m[4]*n[1]+m[8]*n[2];
+    r[4] = m[0]*n[4]+m[4]*n[5]+m[8]*n[6];
+    r[8] = m[0]*n[8]+m[4]*n[9]+m[8]*n[10];
+    r[12]= m[0]*n[12]+m[4]*n[13]+m[8]*n[14]+m[12];
+
+    r[1] = m[1]*n[0]+m[5]*n[1]+m[9]*n[2];
+    r[5] = m[1]*n[4]+m[5]*n[5]+m[9]*n[6];
+    r[9] = m[1]*n[8]+m[5]*n[9]+m[9]*n[10];
+    r[13]= m[1]*n[12]+m[5]*n[13]+m[9]*n[14]+m[13];
+
+    r[2] = m[2]*n[0]+m[6]*n[1]+m[10]*n[2];
+    r[6] = m[2]*n[4]+m[6]*n[5]+m[10]*n[6];
+    r[10]= m[2]*n[8]+m[6]*n[9]+m[10]*n[10];
+    r[14]= m[2]*n[12]+m[6]*n[13]+m[10]*n[14]+m[14];
+
+    return 0;
 }

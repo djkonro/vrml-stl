@@ -1,2 +1,2 @@
-# VRML-STL
+# vrml-stl
 vrml-stl geometry converter

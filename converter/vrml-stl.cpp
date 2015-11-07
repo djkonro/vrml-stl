@@ -1,10 +1,18 @@
+/**
+ *
+ * Author: Djimeli Konrad
+ *
+ */
+
 #include <iostream>
 #include <stdio.h>
 #include <fstream>
+#include <cstring>
 #include "file_util.h"
-#include "NodeType.h"
-#include "NODE.h"
-#include "Parser.h"
+#include "node_type.h"
+#include "node.h"
+#include "parser.h"
+#include "transform_node.h"
 
 #define LEN 20
 
@@ -19,15 +27,64 @@ void get3vec(float *p);
 
 using namespace std;
 
+void 
+printVertices(vector<double> &svert, char *fname, int scale)
+{
+	
+	int i;
+	float point[3];
+	ofstream output(fname);
+
+		/* we create two triangle fans - the cone, and the bottom. */
+		/* first, the flat bit on the bottom */
+		int indx=0;
+	
+			output << "solid s0" << endl;
+			output << "  facet normal 0 0 0" << endl;
+			output << "    outer loop";
+			//output << "      vertex ";
+			
+			
+			for(int x = 0; x < svert.size() ; x++){
+				 	if(((x)%3) == 0){
+				 		output << endl;
+				 		output << "      vertex ";
+				 	}
+				 	
+				 	if(((x)%3) == 0){
+				 		output << (svert[x]) << " ";
+				 	}else{
+				 		output << (svert[x]) << " ";
+				 	}
+				 	
+				 	
+				 	if(x == (svert.size()-1)){
+				 		output << endl <<"    endloop"<< endl;
+				 		output << "  endfacet"<< endl;
+				 		output << "endsolid s0" << endl;
+				 		break;
+				 	}
+				 	
+				 	if(((1+x)%9) == 0){
+				 		output << endl <<"    endloop"<< endl;
+				 		output << "  endfacet"<< endl;
+				 		output << "  facet normal 0 0 0"<< endl;
+				 		output << "    outer loop";
+				 	}	 	
+			}
+}
+
+
 int main(int argc,char **argv)
 {
 	int type;
 	char *tptr, *tempptr;
 	char nextword[LEN];
 	int i;
+	int scale = 1;
 	
-	if(argc < 2){
-		printf("Please enter %s and file name\n", argv[0]);
+	if(argc < 3){
+		printf("Please enter :  %s  infile.wrl outfile.stl\n", argv[0]);
 		return 0;
 	}
 	
@@ -61,6 +118,7 @@ int main(int argc,char **argv)
 	
 	vector<NODE*> childlist;
 	PARSER parse;
+	TRANSFORM trans;
 	NODETYPE node;
 	vector<NODE*> parent;
 	
@@ -91,15 +149,6 @@ int main(int argc,char **argv)
 		}
 		
 		for(i = childlist.size() - 1; i >= 0; i--){
-			/*vector<NODE*> child;
-			cout << "Node are -> " << childlist[i]->nodetypename << endl;
-			parse.getChildNodeList( childlist[i], child);
-			for(j = 0; j < child.size(); j++){
-				cout << "	Has childern "<< child[j]->nodetypename << endl;
-			}*/
-			
-			
-			
 			if(strcmp(childlist[i]->nodetypename.c_str() , "Transform") == 0){
 				
 				//cout << "Node are -> " << childlist[i]->nodetypename << endl;
@@ -107,7 +156,7 @@ int main(int argc,char **argv)
 				//cout << "Translation : "; get3vec(childlist[i]->translation);
 				//cout << "Scale : "; get3vec(childlist[i]->scale);
 				
-				parse.transformChild(childlist[i]);
+				trans.transformChild(childlist[i]);
 				
 				vector<NODE*> tempch;
 				
@@ -128,8 +177,6 @@ int main(int argc,char **argv)
 				//cout << "Rotation : ";get4vec(childlist[i]->rotation);
 				//cout << "Translation : "; get3vec(childlist[i]->translation);
 				//cout << "Scale : "; get3vec(childlist[i]->scale);
-				
-				 //return 0;
 			
 			
 			}else if(strcmp(childlist[i]->nodetypename.c_str(), "Sphere") == 0){
@@ -227,7 +274,8 @@ int main(int argc,char **argv)
 				//cout << "Translation : "; get3vec(childlist[i]->translation);
 				//cout << "Scale : "; get3vec(childlist[i]->scale);	
 		}
-		int scale = 1;
+		
+		
 		
 		for(i = 0; i < childlist.size(); i++){
 			if(strcmp(childlist[i]->nodetypename.c_str(), "Cone") == 0){
@@ -260,11 +308,7 @@ int main(int argc,char **argv)
 		
 		
 		
-		cout << "Argv2 is" << argv[2] << endl;
-		childlist[0]->vertics.clear();
-		childlist[0]->vertics = parse.scenevert;
-	
-		childlist[0]->printConeSlice(childlist[0] , argv[2], scale);
+	printVertices(parse.scenevert , argv[2], scale);
 		
 
 		
@@ -275,7 +319,7 @@ int main(int argc,char **argv)
 	for(i = 0 ; i < parse.userdeftypes.size() ; i++){
 				///cout << "found USE with node " << parse.userdeftypes[i]  << endl;
 		
-		}
+	}
 	
 	
 	/*char word[MAXSTRSIZE]= "k";

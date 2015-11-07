@@ -16,31 +16,37 @@ using namespace std;
 void
 TRANSFORM::transformChild(NODE * pnode)
 {
-	PARSER parse;
 	vector<NODE*> mychildlist;
-	unsigned int count;
-	double tempvec[3];
-	double temprotvec[3];
-		
-	parse.getChildNodeList(pnode, mychildlist);
-		
+	int count;
+	double temprotmat[16] ;//= {1,2,3,4};
+	PARSER par;
+	vector<double> tempvec;
+	
+	par.getChildNodeList(pnode, mychildlist);
+	
 	for(count = 0; count < mychildlist.size(); count++){
-		
+	
 		if(mychildlist[count]->vertics.size()){
+			
+			for(int i = 0; i < (mychildlist[count]->vertics.size()); i+=3 ){
+				//double temp[16] = { 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 };
 				
-			for(unsigned int i = 0; i < (mychildlist[count]->vertics.size()); i+=3 ){
-				tempvec[0] = mychildlist[count]->vertics[i];
-				tempvec[1] = mychildlist[count]->vertics[i+1];
-				tempvec[2] = mychildlist[count]->vertics[i+2];
-				
-				VEC3X4MAT(temprotvec , tempvec ,pnode->rotmat);  //Mutiply vector by rotation matrix
-				//Do scaling and translation
-				mychildlist[count]->vertics[i] = (temprotvec[0]*pnode->scale[0])+pnode->translation[0] ;
-				mychildlist[count]->vertics[i+1] = (temprotvec[1]*pnode->scale[1])+pnode->translation[1];
-				mychildlist[count]->vertics[i+2] = (temprotvec[2]*pnode->scale[2])+pnode->translation[2];
+				//pnode->matmultiply(temp , temp , pnode->rotmat);	
+				temprotmat[0] = mychildlist[count]->vertics[i];
+				temprotmat[1] = mychildlist[count]->vertics[i+1];
+				temprotmat[2] = mychildlist[count]->vertics[i+2];
+				temprotmat[3] = 1;
+				//cout << "before " <<mychildlist[count]->vertics[i] << " "<< mychildlist[count]->vertics[i+1] << " " << mychildlist[count]->vertics[i+2] << endl; 
+				pnode->matmultiply(temprotmat , temprotmat , pnode->rotmat);
+				mychildlist[count]->vertics[i] = (temprotmat[0]*pnode->scale[0])+pnode->translation[0] ;
+				mychildlist[count]->vertics[i+1] = (temprotmat[1]*pnode->scale[1])+pnode->translation[1];
+				mychildlist[count]->vertics[i+2] = (temprotmat[2]*pnode->scale[2])+pnode->translation[2];
+				//cout << "after " <<mychildlist[count]->vertics[i] << " "<< mychildlist[count]->vertics[i+1] << " " << mychildlist[count]->vertics[i+2] << endl; 
 			}
+				
 		}
-	}
+	}	
+	
 }
 
 //Vrml rotation matrix routine

@@ -114,6 +114,7 @@ public:
 	void sliceSphere (NODE *node); 
 	void getPolyRep(NODE *node); 
 	void doMakePoly(vector<NODE*> &noderef);
+	int matmultiply(double * r, double * mm , double* nn);
 };
 
 #endif
