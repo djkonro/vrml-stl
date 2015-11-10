@@ -29,49 +29,42 @@ using namespace std;
 
 void 
 printVertices(vector<double> &svert, char *fname, int scale)
-{
-	
+{	
 	int i;
 	float point[3];
 	ofstream output(fname);
-
-		/* we create two triangle fans - the cone, and the bottom. */
-		/* first, the flat bit on the bottom */
-		int indx=0;
+	int indx=0;
 	
-			output << "solid s0" << endl;
-			output << "  facet normal 0 0 0" << endl;
+	output << "solid s0" << endl;
+	output << "  facet normal 0 0 0" << endl;
+	output << "    outer loop";
+	
+	for(int x = 0; x < svert.size() ; x++){
+		if(((x)%3) == 0){
+			output << endl;
+			output << "      vertex ";
+		}
+		
+		if(((x)%3) == 0){
+			output << (svert[x]) << " ";
+		}else{
+			output << (svert[x]) << " ";
+		}
+				
+		if(x == (svert.size()-1)){
+			output << endl <<"    endloop"<< endl;
+			output << "  endfacet"<< endl;
+			output << "endsolid s0" << endl;
+			break;
+		}
+		
+		if(((1+x)%9) == 0){
+			output << endl <<"    endloop"<< endl;
+			output << "  endfacet"<< endl;
+			output << "  facet normal 0 0 0"<< endl;
 			output << "    outer loop";
-			//output << "      vertex ";
-			
-			
-			for(int x = 0; x < svert.size() ; x++){
-				 	if(((x)%3) == 0){
-				 		output << endl;
-				 		output << "      vertex ";
-				 	}
-				 	
-				 	if(((x)%3) == 0){
-				 		output << (svert[x]) << " ";
-				 	}else{
-				 		output << (svert[x]) << " ";
-				 	}
-				 	
-				 	
-				 	if(x == (svert.size()-1)){
-				 		output << endl <<"    endloop"<< endl;
-				 		output << "  endfacet"<< endl;
-				 		output << "endsolid s0" << endl;
-				 		break;
-				 	}
-				 	
-				 	if(((1+x)%9) == 0){
-				 		output << endl <<"    endloop"<< endl;
-				 		output << "  endfacet"<< endl;
-				 		output << "  facet normal 0 0 0"<< endl;
-				 		output << "    outer loop";
-				 	}	 	
-			}
+		}	 	
+	}
 }
 
 
@@ -106,16 +99,6 @@ int main(int argc,char **argv)
 	
 	formatString(tempptr);
 	
-	/*while(true){
-		tempptr = findKeyWord(tempptr, 0);
-		tempptr = nextWord( tempptr,nextword);
-		if(*tempptr == '\0')
-			break;  
-		
-		//printf("%s\n", nextword);	
-	} */
-	
-	
 	vector<NODE*> childlist;
 	PARSER parse;
 	TRANSFORM trans;
@@ -127,216 +110,69 @@ int main(int argc,char **argv)
 	parse.getChildNodeList(&parse.rootnode , childlist);
 	int j;
 	
-	//cout << "childlist -> " <<childlist.size() << endl;
-	cout << "Rootnode child size " << parse.rootnode.children.size() << endl;
+	cout << childlist.size() <<" Nodes found"<< endl;
 	
-		for(i = 0; i < childlist.size(); i++){
-			
-			if(strcmp(childlist[i]->nodetypename.c_str(), "Cone") == 0){
-				childlist[i]->sliceCone(childlist[i]);
-			}else if(strcmp(childlist[i]->nodetypename.c_str(), "Box") == 0){
-				childlist[i]->sliceBox (childlist[i]);
-			}else if(strcmp(childlist[i]->nodetypename.c_str(), "Cylinder") == 0){
-				childlist[i]->sliceCylinder(childlist[i]);
-			}else if(strcmp(childlist[i]->nodetypename.c_str(), "Sphere") == 0){
-				childlist[i]->sliceSphere(childlist[i]);
-			}else if(strcmp(childlist[i]->nodetypename.c_str(), "IndexedLineSet") == 0){
-				childlist[i]->getPolyRep(childlist[i]);
-			}else if(strcmp(childlist[i]->nodetypename.c_str(), "IndexedFaceSet") == 0){
-				childlist[i]->getPolyRep(childlist[i]);
-			}
-			
+	for(i = 0; i < childlist.size(); i++){	
+		if(strcmp(childlist[i]->nodetypename.c_str(), "Cone") == 0){
+			childlist[i]->sliceCone(childlist[i]);
+		}else if(strcmp(childlist[i]->nodetypename.c_str(), "Box") == 0){
+			childlist[i]->sliceBox (childlist[i]);
+		}else if(strcmp(childlist[i]->nodetypename.c_str(), "Cylinder") == 0){
+			childlist[i]->sliceCylinder(childlist[i]);
+		}else if(strcmp(childlist[i]->nodetypename.c_str(), "Sphere") == 0){
+			childlist[i]->sliceSphere(childlist[i]);
+		}else if(strcmp(childlist[i]->nodetypename.c_str(), "IndexedLineSet") == 0){
+			childlist[i]->getPolyRep(childlist[i]);
+		}else if(strcmp(childlist[i]->nodetypename.c_str(), "IndexedFaceSet") == 0){
+			childlist[i]->getPolyRep(childlist[i]);
 		}
 		
-		for(i = childlist.size() - 1; i >= 0; i--){
-			if(strcmp(childlist[i]->nodetypename.c_str() , "Transform") == 0){
-				
-				//cout << "Node are -> " << childlist[i]->nodetypename << endl;
-				//cout << "Rotation : ";get4vec(childlist[i]->rotation);
-				//cout << "Translation : "; get3vec(childlist[i]->translation);
-				//cout << "Scale : "; get3vec(childlist[i]->scale);
-				
-				trans.transformChild(childlist[i]);
-				
-				vector<NODE*> tempch;
-				
-				//parse.getChildNodeList(childlist[i] , tempch);
-				
-				for(int p = 0; p < tempch.size(); p++){
-				;
-				//cout << "This node has child " << tempch[p]->nodetypename << endl;
-				}
-			//	cout << endl;
-			
-			}else if(strcmp(childlist[i]->nodetypename.c_str(), "Cone") == 0){
-				//cout << "Node are -> " << childlist[i]->nodetypename << endl;
-				//cout << "Bottomradius : " <<childlist[i]->bottomradius << endl;
-				//cout << "Height : " << childlist[i]->height << endl;
-				
-				//cout << "This node has transform : " << endl;
-				//cout << "Rotation : ";get4vec(childlist[i]->rotation);
-				//cout << "Translation : "; get3vec(childlist[i]->translation);
-				//cout << "Scale : "; get3vec(childlist[i]->scale);
-			
-			
-			}else if(strcmp(childlist[i]->nodetypename.c_str(), "Sphere") == 0){
-				//cout << "Node are -> " << childlist[i]->nodetypename << endl;
-				//cout << "Radius : " <<childlist[i]->radius << endl;
-				//cout << "This node has transform : " << endl;
-				//cout << "Rotation : ";get4vec(childlist[i]->rotation);
-				//cout << "Translation : "; get3vec(childlist[i]->translation);
-				//cout << "Scale : "; get3vec(childlist[i]->scale);
-			
-			}else if(strcmp(childlist[i]->nodetypename.c_str(), "Cylinder") == 0){
-				//cout << "Node are -> " << childlist[i]->nodetypename << endl;
-				//cout << "Radius : " <<childlist[i]->radius << endl;
-				//cout << "Height : " << childlist[i]->height << endl;
-				//cout << "This node has transform : " << endl;
-				//cout << "Rotation : ";get4vec(childlist[i]->rotation);
-				//cout << "Translation : "; get3vec(childlist[i]->translation);
-				//cout << "Scale : "; get3vec(childlist[i]->scale);
-			
-			}else if(strcmp(childlist[i]->nodetypename.c_str(), "Box") == 0){
-				//cout << "Node are -> " << childlist[i]->nodetypename << endl;
-				//cout << "Size : ";get3vec(childlist[i]->size);
-				//cout << "This node has transform : " << endl;
-				//cout << "Rotation : ";get4vec(childlist[i]->rotation);
-				//cout << "Translation : "; get3vec(childlist[i]->translation);
-				//cout << "Scale : "; get3vec(childlist[i]->scale);
-			
-			}else if(strcmp(childlist[i]->nodetypename.c_str(), "IndexedFaceSet") == 0){
-				/*cout << "Node are -> " << childlist[i]->nodetypename << endl;
-				cout << "This node has " << childlist[i]->children.size() << endl;
-				int c = childlist[i]->coordindex.size();
-				int cc;
-				cout << "Coordindex : ";
-				for(cc = 0; cc < c; cc++){
-					cout << childlist[i]->coordindex[cc] << " ";
-					if((cc % 3) == 0)
-					cout << endl;
-				}
-				
-				c = childlist[i]->children[0]->point.size();
-				cout << "\nPoint : ";
-				for(cc = 0; cc < c; cc++){
-					cout << childlist[i]->children[0]->point[cc] << " ";
-					if((cc % 3) == 0)
-						cout << endl;
-				}
-				
-				//cout << "This node has transform : " << endl;
-				//cout << "Rotation : ";get4vec(childlist[i]->rotation);
-				//cout << "Translation : "; get3vec(childlist[i]->translation);
-				//cout << "Scale : "; get3vec(childlist[i]->scale);
-			
-			}else if(strcmp(childlist[i]->nodetypename.c_str(), "IndexedLineSet") == 0){
-				cout << "Node are -> " << childlist[i]->nodetypename << endl;
-				int l = childlist[i]->coordindex.size();
-				int ll;
-				cout << "Coordindex : ";
-				for(ll = 0; ll < l; ll++){
-					cout << childlist[i]->coordindex[ll] << " ";
-					if((ll % 3) == 0)
-						cout << endl;
-				}
-				
-				
-				l = childlist[i]->children[0]->point.size();
-				cout << "\nPoint : ";
-				for(ll = 0; ll < l; ll++){
-					cout << childlist[i]->children[0]->point[ll] << " ";
-					if((ll % 3) == 0)
-						cout << endl;
-				}
-				
-				//cout << "This node has transform : " << endl;
-				//cout << "Rotation : ";get4vec(childlist[i]->rotation);
-				//cout << "Translation : "; get3vec(childlist[i]->translation);
-				//cout << "Scale : "; get3vec(childlist[i]->scale);
-			*/
-			}else if(strcmp(childlist[i]->nodetypename.c_str(), "Coordinate") == 0){
-				/*cout << "Node are -> " << childlist[i]->nodetypename << endl;
-				int l = childlist[i]->coordindex.size();
-				int ll;
-				l = childlist[i]->point.size();
-				cout << "\nPoint : ";
-				for(ll = 0; ll < l; ll++){
-					cout << childlist[i]->point[ll] << " ";
-					if((ll % 3) == 0)
-						cout << endl;
-				}*/
+	}
+	
+	//Apply node transformations
+	for(i = childlist.size() - 1; i >= 0; i--){
+		if(strcmp(childlist[i]->nodetypename.c_str() , "Transform") == 0)	
+			trans.transformChild(childlist[i]);
+		
+	}
+	
+	
+	
+	for(i = 0; i < childlist.size(); i++){
+		if(strcmp(childlist[i]->nodetypename.c_str(), "Cone") == 0){
+			for(int l = 0; l < childlist[i]->vertics.size(); l++){
+				parse.scenevert.push_back(childlist[i]->vertics[l]);
 			}
-			
-			//cout << endl;
-			
-			//cout << "This node has transform : " << endl;
-				//cout << "Rotation : ";get4vec(childlist[i]->rotation);
-				//cout << "Translation : "; get3vec(childlist[i]->translation);
-				//cout << "Scale : "; get3vec(childlist[i]->scale);	
+		}else if(strcmp(childlist[i]->nodetypename.c_str(), "Box") == 0){
+			for(int l = 0; l < childlist[i]->vertics.size(); l++){
+				parse.scenevert.push_back(childlist[i]->vertics[l]);
+			}
+		}else if(strcmp(childlist[i]->nodetypename.c_str(), "Cylinder") == 0){
+			for(int l = 0; l < childlist[i]->vertics.size(); l++){
+				parse.scenevert.push_back(childlist[i]->vertics[l]);
+			}
+		}else if(strcmp(childlist[i]->nodetypename.c_str(), "Sphere") == 0){
+			for(int l = 0; l < childlist[i]->vertics.size(); l++){
+				parse.scenevert.push_back(childlist[i]->vertics[l]);
+			}
+		}else if(strcmp(childlist[i]->nodetypename.c_str(), "IndexedFaceSet") == 0){
+			for(int l = 0; l < childlist[i]->vertics.size(); l++){
+				parse.scenevert.push_back(childlist[i]->vertics[l]);
+			}
+		}else if(strcmp(childlist[i]->nodetypename.c_str(), "IndexedLineSet") == 0){
+			for(int l = 0; l < childlist[i]->vertics.size(); l++){
+				parse.scenevert.push_back(childlist[i]->vertics[l]);
+			}
 		}
 		
-		
-		
-		for(i = 0; i < childlist.size(); i++){
-			if(strcmp(childlist[i]->nodetypename.c_str(), "Cone") == 0){
-				for(int l = 0; l < childlist[i]->vertics.size(); l++){
-					parse.scenevert.push_back(childlist[i]->vertics[l]);
-				}
-			}else if(strcmp(childlist[i]->nodetypename.c_str(), "Box") == 0){
-				for(int l = 0; l < childlist[i]->vertics.size(); l++){
-					parse.scenevert.push_back(childlist[i]->vertics[l]);
-				}
-			}else if(strcmp(childlist[i]->nodetypename.c_str(), "Cylinder") == 0){
-				for(int l = 0; l < childlist[i]->vertics.size(); l++){
-					parse.scenevert.push_back(childlist[i]->vertics[l]);
-				}
-			}else if(strcmp(childlist[i]->nodetypename.c_str(), "Sphere") == 0){
-				for(int l = 0; l < childlist[i]->vertics.size(); l++){
-					parse.scenevert.push_back(childlist[i]->vertics[l]);
-				}
-			}else if(strcmp(childlist[i]->nodetypename.c_str(), "IndexedFaceSet") == 0){
-				for(int l = 0; l < childlist[i]->vertics.size(); l++){
-					parse.scenevert.push_back(childlist[i]->vertics[l]);
-				}
-			}else if(strcmp(childlist[i]->nodetypename.c_str(), "IndexedLineSet") == 0){
-				for(int l = 0; l < childlist[i]->vertics.size(); l++){
-					parse.scenevert.push_back(childlist[i]->vertics[l]);
-				}
-			}
-			
-		}
-		
-		
-		
+	}
+	
+	//Write vertices to outputfile
 	printVertices(parse.scenevert , argv[2], scale);
-		
-
-		
+				
 	for(i = 0; i < childlist.size(); i++){
 		delete childlist[i];
 	}
-	
-	for(i = 0 ; i < parse.userdeftypes.size() ; i++){
-				///cout << "found USE with node " << parse.userdeftypes[i]  << endl;
-		
-	}
-	
-	
-	/*char word[MAXSTRSIZE]= "k";
-	getNextWord(tptr, word);
-		findKeyWord( word, 0);
-		cout << (word) << endl;
-		
-	while (getNextWord(word)){
-		
-		findKeyWord( word, 0);
-		cout << (word) << endl;
-	}*/
-	
-	
-	//nextPtr(tempptr);nextPtr(tempptr);nextPtr(tempptr);nextPtr(tempptr);
-	
-	//printf("%s\n", tptr);
 	 
 	 
 	return 0;
