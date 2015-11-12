@@ -80,7 +80,7 @@ using namespace std;
 char *getNextWord( char *nextword);
 char *nextWord(char *inputstring, char * nextwd);
  
-class NODE 
+class NODE
 {
 public:
 	int nnodetype;
